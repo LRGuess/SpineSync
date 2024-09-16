@@ -4,8 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Random;
 
 public class CorrectorScreen extends JFrame implements KeyListener {
+
+    private final String selectedMessage;
 
     public CorrectorScreen() {
         //Set up JFrame
@@ -21,6 +24,18 @@ public class CorrectorScreen extends JFrame implements KeyListener {
         //Make screen black
         this.getContentPane().setBackground(Color.BLACK);
 
+        // Randomly select a message from the array
+        Random random = new Random();
+        // Array of messages to display
+        String[] messages = {
+                "Sit up straight!",
+                "Correct your posture!",
+                "Don't slouch!",
+                "Stay focused!",
+                "Stretch your back!"
+        };
+        selectedMessage = messages[random.nextInt(messages.length)];
+
         //Center window
         this.setLocationRelativeTo(null);
     }
@@ -29,13 +44,12 @@ public class CorrectorScreen extends JFrame implements KeyListener {
         super.paint(g);
         g.setColor(Color.white);
         g.setFont(new Font("Arial", Font.BOLD, 50));
-
-        String message = "Prees sdkghjsdfgh";
+        // Get the screen size and center the text
         FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
-        int x = (getWidth() - fontMetrics.stringWidth(message));
+        int x = (getWidth() - fontMetrics.stringWidth(selectedMessage)) / 2;
         int y = (getHeight() - fontMetrics.getHeight()) / 2 + fontMetrics.getAscent();
 
-        g.drawString(message, x, y);
+        g.drawString(selectedMessage, x, y);
     }
 
     //KeyListener
