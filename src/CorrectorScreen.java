@@ -2,11 +2,9 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Random;
 
-public class CorrectorScreen extends JFrame implements KeyListener {
+public class CorrectorScreen extends JFrame {
 
     private final String selectedMessage;
 
@@ -17,9 +15,6 @@ public class CorrectorScreen extends JFrame implements KeyListener {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setUndecorated(true); //Remove window borders
         this.setExtendedState(JFrame.MAXIMIZED_BOTH); //Fullscreen
-
-        //Detect key presses
-        this.addKeyListener(this);
 
         //Make screen black
         this.getContentPane().setBackground(Color.BLACK);
@@ -51,18 +46,6 @@ public class CorrectorScreen extends JFrame implements KeyListener {
 
         g.drawString(selectedMessage, x, y);
     }
-
-    //KeyListener
-    @Override
-    public void keyTyped(KeyEvent e) {
-        System.exit(0);
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {}
-
-    @Override
-    public void keyReleased(KeyEvent e) {}
 
     //Main to run the prog
     public static void main(String [] args) {
