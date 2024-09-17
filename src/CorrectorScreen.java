@@ -2,6 +2,8 @@ package src;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Random;
 
 public class CorrectorScreen extends JFrame {
@@ -30,6 +32,24 @@ public class CorrectorScreen extends JFrame {
                 "Stretch your back!"
         };
         selectedMessage = messages[random.nextInt(messages.length)];
+
+        // Set layout and add a button
+        this.setLayout(new BorderLayout());
+        JButton closeButton = new JButton("OK");
+        closeButton.setFont(new Font("Arial", Font.BOLD, 30));
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Close the screen when the button is pressed
+                System.exit(0);
+            }
+        });
+
+        // Center button at the bottom
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.BLACK);
+        buttonPanel.add(closeButton);
+        this.add(buttonPanel, BorderLayout.SOUTH);
 
         //Center window
         this.setLocationRelativeTo(null);
