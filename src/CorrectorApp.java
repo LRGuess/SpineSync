@@ -8,25 +8,30 @@ import java.util.Random;
 
 public class CorrectorApp extends JFrame {
 
-    private Timer timer; // Timer to trigger the reminder screen
+    private Timer reminderTimer; // Timer to trigger the reminder screen
+    private Timer countdownTimer; // Timer to update the countdown
     private int interval = 5000; // Default interval (5 seconds for demo purposes)
+    private int remainingTime; // Time remaining until the next reminder
+    private JLabel statusLabel; // Label to show time until next reminder
 
     public CorrectorApp() {
         // Set up the control window (menu)
         this.setTitle("Posture Corrector");
         this.setSize(400, 200);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLayout(new GridLayout(3, 1));
+        this.setLayout(new GridLayout(4, 1));
 
         JLabel intervalLabel = new JLabel("Set interval (minutes):", SwingConstants.CENTER);
         JTextField intervalField = new JTextField("5"); // Default interval is 5 minutes
         JButton startButton = new JButton("Start");
         JButton stopButton = new JButton("Stop");
+        statusLabel = new JLabel("Stopped", SwingConstants.CENTER); // Status label to show time left or stopped
 
         this.add(intervalLabel);
         this.add(intervalField);
         this.add(startButton);
         this.add(stopButton);
+        this.add(statusLabel);
 
         // Start button action
         startButton.addActionListener(new ActionListener() {
@@ -36,19 +41,34 @@ public class CorrectorApp extends JFrame {
                 try {
                     minutes = Integer.parseInt(intervalField.getText());
                     interval = minutes * 60 * 1000; // Convert minutes to milliseconds
+                    remainingTime = interval / 1000; // Set remaining time in seconds
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Please enter a valid number.");
                     return;
                 }
 
-                // Start the timer
-                timer = new Timer(interval, new ActionListener() {
+                // Start the reminder timer
+                reminderTimer = new Timer(interval, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         new CorrectorScreen(); // Display the reminder screen
+                        remainingTime = interval / 1000; // Reset remaining time after reminder
                     }
                 });
-                timer.start();
+                reminderTimer.start();
+
+                // Start the countdown timer to update the label every second
+                countdownTimer = new Timer(1000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (remainingTime > 0) {
+                            remainingTime--;
+                            statusLabel.setText("Next reminder in: " + remainingTime + " seconds");
+                        }
+                    }
+                });
+                countdownTimer.start();
+
                 JOptionPane.showMessageDialog(null, "Reminder started! Every " + minutes + " minutes.");
             }
         });
@@ -57,10 +77,14 @@ public class CorrectorApp extends JFrame {
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (timer != null && timer.isRunning()) {
-                    timer.stop();
-                    JOptionPane.showMessageDialog(null, "Reminder stopped.");
+                if (reminderTimer != null && reminderTimer.isRunning()) {
+                    reminderTimer.stop();
                 }
+                if (countdownTimer != null && countdownTimer.isRunning()) {
+                    countdownTimer.stop();
+                }
+                statusLabel.setText("Stopped");
+                JOptionPane.showMessageDialog(null, "Reminder stopped.");
             }
         });
 
@@ -82,13 +106,13 @@ public class CorrectorApp extends JFrame {
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             this.setUndecorated(true); // Remove window borders
             this.setExtendedState(JFrame.MAXIMIZED_BOTH); // Fullscreen
+            this.setAlwaysOnTop(true); // Make sure it stays on top of other windows
 
             // Make screen black
             this.getContentPane().setBackground(Color.BLACK);
 
             // Randomly select a message from the array
             Random random = new Random();
-            // Array of messages to display
             String[] messages = {
                     "Sit up straight!",
                     "Correct your posture!",
@@ -97,6 +121,7 @@ public class CorrectorApp extends JFrame {
                     "Stretch your back!"
             };
             selectedMessage = messages[random.nextInt(messages.length)];
+
             String[] buttonMessages = {
                     "Go away",
                     "Ok",
@@ -104,7 +129,7 @@ public class CorrectorApp extends JFrame {
                     "I don't care",
                     "Leave me alone"
             };
-            buttonMessage = buttonMessages[random.nextInt(messages.length)];
+            buttonMessage = buttonMessages[random.nextInt(buttonMessages.length)];
 
             // Set layout and add a button
             this.setLayout(new BorderLayout());
@@ -113,8 +138,7 @@ public class CorrectorApp extends JFrame {
             closeButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // Close the screen when the button is pressed
-                    dispose(); // Just close this window, not the whole app
+                    dispose(); // Close the screen when the button is pressed
                 }
             });
 
@@ -133,11 +157,9 @@ public class CorrectorApp extends JFrame {
             super.paint(g);
             g.setColor(Color.white);
             g.setFont(new Font("Arial", Font.BOLD, 50));
-            // Get the screen size and center the text
             FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
             int x = (getWidth() - fontMetrics.stringWidth(selectedMessage)) / 2;
             int y = (getHeight() - fontMetrics.getHeight()) / 2 + fontMetrics.getAscent();
-
             g.drawString(selectedMessage, x, y);
         }
     }
