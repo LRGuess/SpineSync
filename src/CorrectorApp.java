@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Random;
 
 public class CorrectorApp extends JFrame {
@@ -12,7 +14,9 @@ public class CorrectorApp extends JFrame {
     private Timer countdownTimer; // Timer to update the countdown
     private int interval = 5000; // Default interval (5 seconds for demo purposes)
     private int remainingTime; // Time remaining until the next reminder
-    private JLabel statusLabel; // Label to show time until next reminder
+    private final JLabel statusLabel; // Label to show time until next reminder
+    private TrayIcon trayIcon;
+    private SystemTray systemTray;
 
     public CorrectorApp() {
         // Set up the control window (menu)
@@ -32,6 +36,20 @@ public class CorrectorApp extends JFrame {
         this.add(startButton);
         this.add(stopButton);
         this.add(statusLabel);
+
+        // Minimize to tray
+        setupSystemTray();
+
+        // Handle window minimize event to hide it
+        this.addWindowStateListener(new WindowAdapter() {
+            @Override
+            public void windowStateChanged(WindowEvent e) {
+                if (e.getNewState() == ICONIFIED) {
+                    setVisible(false); // Hide window when minimized
+                    showTrayMessage("Posture Corrector is still running.");
+                }
+            }
+        });
 
         // Start button action
         startButton.addActionListener(new ActionListener() {
@@ -93,11 +111,72 @@ public class CorrectorApp extends JFrame {
         this.setVisible(true);
     }
 
+    private void setupSystemTray() {
+        if (!SystemTray.isSupported()) {
+            System.out.println("System tray is not supported!");
+            return;
+        }
+
+        systemTray = SystemTray.getSystemTray();
+        Image iconImage = Toolkit.getDefaultToolkit().getImage("icon.png"); // Set your tray icon image here
+
+        // Create popup menu for the tray icon
+        PopupMenu popupMenu = getPopupMenu();
+
+        trayIcon = new TrayIcon(iconImage, "Posture Corrector", popupMenu);
+        trayIcon.setImageAutoSize(true);
+
+        trayIcon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(true); // Restore window when tray icon is clicked
+                setExtendedState(JFrame.NORMAL); // Unminimize
+            }
+        });
+
+        try {
+            systemTray.add(trayIcon); // Add tray icon to system tray
+        } catch (AWTException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private PopupMenu getPopupMenu() {
+        PopupMenu popupMenu = new PopupMenu();
+        MenuItem openItem = new MenuItem("Open");
+        MenuItem exitItem = new MenuItem("Exit");
+
+        openItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(true); // Restore window
+                setExtendedState(JFrame.NORMAL); // Unminimize
+            }
+        });
+
+        exitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                systemTray.remove(trayIcon);
+                System.exit(0); // Exit application
+            }
+        });
+
+        popupMenu.add(openItem);
+        popupMenu.add(exitItem);
+        return popupMenu;
+    }
+
+    private void showTrayMessage(String message) {
+        if (trayIcon != null) {
+            trayIcon.displayMessage("Posture Corrector", message, TrayIcon.MessageType.INFO);
+        }
+    }
+
     // Reminder screen
     public static class CorrectorScreen extends JFrame {
 
         private final String selectedMessage;
-        private final String buttonMessage;
 
         public CorrectorScreen() {
             // Set up JFrame
@@ -129,7 +208,7 @@ public class CorrectorApp extends JFrame {
                     "I don't care",
                     "Leave me alone"
             };
-            buttonMessage = buttonMessages[random.nextInt(buttonMessages.length)];
+            String buttonMessage = buttonMessages[random.nextInt(buttonMessages.length)];
 
             // Set layout and add a button
             this.setLayout(new BorderLayout());
@@ -166,6 +245,6 @@ public class CorrectorApp extends JFrame {
 
     // Main to run the app
     public static void main(String[] args) {
-        new CorrectorApp();
+        SwingUtilities.invokeLater(CorrectorApp::new);
     }
 }
