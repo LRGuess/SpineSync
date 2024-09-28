@@ -46,7 +46,7 @@ public class CorrectorApp extends JFrame {
             public void windowStateChanged(WindowEvent e) {
                 if (e.getNewState() == ICONIFIED) {
                     setVisible(false); // Hide window when minimized
-                    showTrayMessage("Posture Corrector is still running.");
+                    showTrayMessage();
                 }
             }
         });
@@ -167,9 +167,9 @@ public class CorrectorApp extends JFrame {
         return popupMenu;
     }
 
-    private void showTrayMessage(String message) {
+    private void showTrayMessage() {
         if (trayIcon != null) {
-            trayIcon.displayMessage("Posture Corrector", message, TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage("Posture Corrector", "Posture Corrector is still running.", TrayIcon.MessageType.INFO);
         }
     }
 
@@ -212,24 +212,26 @@ public class CorrectorApp extends JFrame {
 
             // Set layout and add a button
             this.setLayout(new BorderLayout());
+            JPanel buttonPanel = getButtonPanel(buttonMessage);
+            this.add(buttonPanel, BorderLayout.SOUTH);
+
+            // Center window
+            this.setLocationRelativeTo(null);
+            this.setVisible(true);
+        }
+
+        private JPanel getButtonPanel(String buttonMessage) {
             JButton closeButton = new JButton(buttonMessage);
             closeButton.setFont(new Font("Arial", Font.BOLD, 30));
-            closeButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    dispose(); // Close the screen when the button is pressed
-                }
+            closeButton.addActionListener(_ -> {
+                dispose(); // Close the screen when the button is pressed
             });
 
             // Center button at the bottom
             JPanel buttonPanel = new JPanel();
             buttonPanel.setBackground(Color.BLACK);
             buttonPanel.add(closeButton);
-            this.add(buttonPanel, BorderLayout.SOUTH);
-
-            // Center window
-            this.setLocationRelativeTo(null);
-            this.setVisible(true);
+            return buttonPanel;
         }
 
         public void paint(Graphics g) {
